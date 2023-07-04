@@ -16,6 +16,21 @@ app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
 app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
 app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
 
+
+#------------------------------------------------------------------
+# CREATE USER
+#------------------------------------------------------------------
+
+@app.route('/create_user', methods=['POST'])
+def create_user():
+    username = request.form['username']
+    cursor = mysql.connection.cursor()
+    cursor.execute("INSERT INTO Users (Name) VALUES (%s)", (username,))
+    mysql.connection.commit()
+    user_id = cursor.lastrowid
+    cursor.close()
+    return jsonify(user_id=user_id)
+
 #------------------------------------------------------------------
 # GET COURSES
 #------------------------------------------------------------------

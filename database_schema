@@ -1,0 +1,126 @@
+-- @block Table Users
+CREATE TABLE Users (
+  UserID INT AUTO_INCREMENT PRIMARY KEY,
+  Name VARCHAR(255),
+  Email VARCHAR(255),
+  Role VARCHAR(255),
+  PasswordHash VARCHAR(255)
+);
+
+-- @block Table Courses
+CREATE TABLE Courses (
+  CourseID INT AUTO_INCREMENT PRIMARY KEY,
+  CourseTitle VARCHAR(255)
+);
+
+-- @block Table UserCourses
+CREATE TABLE UserCourses (
+  UserCourseID INT AUTO_INCREMENT PRIMARY KEY,
+  UserID INT,
+  CourseID INT,
+  FOREIGN KEY (UserID) REFERENCES Users(UserID),
+  FOREIGN KEY (CourseID) REFERENCES Courses(CourseID)
+);
+
+-- @block Table Template
+CREATE TABLE Template (
+  TemplateID INT AUTO_INCREMENT PRIMARY KEY,
+  QuestionType VARCHAR(255),
+  CourseID INT,
+  FOREIGN KEY (CourseID) REFERENCES Courses(CourseID)
+);
+
+-- @block Table Modules
+CREATE TABLE Modules (
+  ModuleNo INT AUTO_INCREMENT PRIMARY KEY,
+  CourseID INT,
+  ModuleTitle VARCHAR(255),
+  FOREIGN KEY (CourseID) REFERENCES Courses(CourseID)
+);
+
+-- @block Table Assignments
+CREATE TABLE Assignments (
+  AssignmentID INT AUTO_INCREMENT PRIMARY KEY,
+  ModuleNo INT,
+  AssignmentDescription TEXT,
+	AssignmentTitle VARCHAR (255),
+  FOREIGN KEY (ModuleNo) REFERENCES Modules(ModuleNo),
+);
+
+-- @block Table Tasks
+CREATE TABLE Tasks (
+  TaskNo INT AUTO_INCREMENT PRIMARY KEY,
+  AssignmentID INT,
+  TaskDescription VARCHAR(255),
+  FOREIGN KEY (AssignmentID) REFERENCES Assignments(AssignmentID)
+);
+
+-- @block Table LearningObjectiveTaskRelationships
+CREATE TABLE LearningObjectiveTaskRelationships (
+  LearningObjectiveNo INT,
+  TaskNo INT,
+  PRIMARY KEY (LearningObjectiveNo, TaskNo),
+  FOREIGN KEY (LearningObjectiveNo) REFERENCES LearningObjectives(LearningObjectiveNo) ON DELETE CASCADE,
+  FOREIGN KEY (TaskNo) REFERENCES Tasks(TaskNo) ON DELETE CASCADE
+);
+
+-- @block Table LearningObjectives
+CREATE TABLE LearningObjectives (
+  LearningObjectiveNo INT AUTO_INCREMENT PRIMARY KEY,
+  TaskNo INT,
+  LearningObjectiveDescription VARCHAR(255),
+  FOREIGN KEY (TaskNo) REFERENCES Tasks(TaskNo)
+);
+
+-- @block Table Questions
+CREATE TABLE Questions (
+  QuestionNo INT AUTO_INCREMENT PRIMARY KEY,
+  LearningObjectiveNo INT,
+  QuestionCriteria VARCHAR(20),
+  QuestionDescription VARCHAR(255),
+  FOREIGN KEY (LearningObjectiveNo) REFERENCES LearningObjectives(LearningObjectiveNo)
+);
+
+-- @block Table QuestionRelationships
+CREATE TABLE QuestionRelationships (
+  RelationshipID INT AUTO_INCREMENT PRIMARY KEY,
+  QuestionNo1 INT,
+  QuestionNo2 INT,
+  FOREIGN KEY (QuestionNo1) REFERENCES Questions(QuestionNo),
+  FOREIGN KEY (QuestionNo2) REFERENCES Questions(QuestionNo)
+);
+
+-- @block Table QuestionSupportingData
+CREATE TABLE QuestionSupportingData (
+  QuestionSupportingDataID INT AUTO_INCREMENT PRIMARY KEY,
+  QuestionNo INT,
+  QuestionSupportingDataDescription VARCHAR(255),
+  FOREIGN KEY (QuestionNo) REFERENCES Questions(QuestionNo)
+);
+
+-- @block Table SuggestedEvidence
+CREATE TABLE SuggestedEvidence (
+  SuggestedEvidenceID INT AUTO_INCREMENT PRIMARY KEY,
+  QuestionNo INT,
+  SuggestedEvidenceDescription TEXT,
+  FOREIGN KEY (QuestionNo) REFERENCES Questions(QuestionNo)
+);
+
+-- @block Table StudentSubmissions
+CREATE TABLE StudentSubmissions (
+  SubmissionID INT AUTO_INCREMENT PRIMARY KEY,
+  QuestionNo INT,
+  UserID INT,
+  SubmissionContent TEXT,
+  FOREIGN KEY (QuestionNo) REFERENCES Questions(QuestionNo),
+  FOREIGN KEY (UserID) REFERENCES Users(UserID)
+);
+
+-- @block Table QuestionOutput
+CREATE TABLE QuestionOutput (
+  QuestionOutputID INT AUTO_INCREMENT PRIMARY KEY,
+  SubmissionID INT,
+  QuestionCommentsAndEvidence TEXT,
+  QuestionAchievedStatus VARCHAR(5),
+  FOREIGN KEY (SubmissionID) REFERENCES StudentSubmissions(SubmissionID)
+);

@@ -4,7 +4,7 @@ from flask_mysqldb import MySQL
 from flask_cors import CORS
 from dotenv import load_dotenv
 
-load_dotenv('my_sql_config.env')
+load_dotenv('../mysql_config.env')
 
 app = Flask(__name__)
 CORS(app)
@@ -15,21 +15,6 @@ app.config['MYSQL_USER'] = os.getenv('MYSQL_USER')
 app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
 app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
 app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
-
-
-#------------------------------------------------------------------
-# CREATE USER
-#------------------------------------------------------------------
-
-@app.route('/create_user', methods=['POST'])
-def create_user():
-    username = request.form['username']
-    cursor = mysql.connection.cursor()
-    cursor.execute("INSERT INTO Users (Name) VALUES (%s)", (username,))
-    mysql.connection.commit()
-    user_id = cursor.lastrowid
-    cursor.close()
-    return jsonify(user_id=user_id)
 
 #------------------------------------------------------------------
 # GET COURSES

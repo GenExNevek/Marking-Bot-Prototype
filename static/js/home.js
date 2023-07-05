@@ -1,10 +1,4 @@
 function handleDropdowns(assignmentRedirectUrl) {
-    // Display the 'Course' dropdown
-    document.getElementById('course-dropdown').hidden = false;
-    // Hide the 'Module' and 'Assignment' dropdowns until they are needed
-    document.getElementById('module-dropdown').hidden = true;
-    document.getElementById('assignment-dropdown').hidden = true;
-
     //------------------------------------------------------------------
     // GET COURSE
     //------------------------------------------------------------------
@@ -28,7 +22,6 @@ function handleDropdowns(assignmentRedirectUrl) {
             dropdown.add(option);
         }
     }).catch(error => console.error('Error:', error));
-
 
     //------------------------------------------------------------------
     // GET MODULES
@@ -107,6 +100,9 @@ function handleDropdowns(assignmentRedirectUrl) {
         // Append the button to the body (or wherever you want to add it)
         document.body.appendChild(btn);
     });
+
+    // Display the 'Course' dropdown at the end of the function
+    document.getElementById('course-dropdown').hidden = false;
 }
 
 document.getElementById('submit-assignment-btn').addEventListener('click', function() {
@@ -119,4 +115,60 @@ document.getElementById('edit-assignment-btn').addEventListener('click', functio
 
 document.getElementById('review-feedback-btn').addEventListener('click', function() {
     handleDropdowns("review_assignment.html");
+});
+
+//------------------------------------------------------------------
+// ASSIGN USER
+//------------------------------------------------------------------
+
+document.getElementById('assign-user-btn').addEventListener('click', function() {
+    const username = document.getElementById('username-input').value;
+    fetch('http://localhost:5000/assign_user', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({username: username})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // User was successfully assigned, allow them to proceed
+            alert('User was successfully assigned');
+            document.getElementById('submit-assignment-btn').hidden = false;
+            document.getElementById('edit-assignment-btn').hidden = false;
+            document.getElementById('review-feedback-btn').hidden = false;
+        } else {
+            // Show error message
+            alert(data.message);
+        }
+    });
+});
+
+//------------------------------------------------------------------
+// CREATE USER
+//------------------------------------------------------------------
+
+document.getElementById('create-user-btn').addEventListener('click', function() {
+    const username = document.getElementById('username-input').value;
+    fetch('http://localhost:5000/create_user', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({username: username})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // User was successfully created, allow them to proceed
+            alert('User was successfully created');
+            document.getElementById('submit-assignment-btn').hidden = false;
+            document.getElementById('edit-assignment-btn').hidden = false;
+            document.getElementById('review-feedback-btn').hidden = false;
+        } else {
+            // Show error message
+            alert(data.message);
+        }
+    });
 });

@@ -4,7 +4,12 @@ from flask_mysqldb import MySQL
 from flask_cors import CORS
 from dotenv import load_dotenv
 
-load_dotenv('../mysql_config.env')
+# Get the absolute path to the directory containing this file
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Load the .env file using the absolute path
+env_path = os.path.join(current_dir, '..', 'mysql_config.env')
+load_dotenv(env_path)
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')  # Add this line to set a secret key for your Flask application
@@ -16,6 +21,38 @@ app.config['MYSQL_USER'] = os.getenv('MYSQL_USER')
 app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
 app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
 app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
+
+#--------------------------------------------------
+# DISPLAY ASSIGNMENT
+#--------------------------------------------------
+
+@app.route('/display_assignment', methods=['GET'])
+def display_assignment():
+    course = request.args.get('course')
+    module = request.args.get('module')
+    assignment = request.args.get('assignment')
+    
+    cursor = mysql.connection.cursor()
+    
+    try:
+        cursor.execute('SELECT CourseTitle FROM Courses WHERE CourseID = %s', (course,))
+        course_title = cursor.fetchone()[0]
+        
+        cursor.execute('SELECT ModuleTitle FROM Modules WHERE ModuleNo = %s', (module,))
+        module_title = cursor.fetchone()[0]
+        
+        cursor.execute('SELECT AssignmentTitle FROM Assignments WHERE AssignmentID = %s', (assignment,))
+        assignment_title = cursor.fetchone()[0]
+        
+        return jsonify({
+            'CourseTitle': course_title,
+            'ModuleTitle': module_title,
+            'AssignmentTitle': assignment_title
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
 
 #--------------------------------------------------
 # GET COURSES

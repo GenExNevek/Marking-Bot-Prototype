@@ -86,19 +86,26 @@ function handleDropdowns(assignmentRedirectUrl) {
     //------------------------------------------------------------------
 
     document.getElementById('assignment-dropdown').addEventListener('change', function() {
-        // Create a new button element
-        var btn = document.createElement("button");
+        var course = document.getElementById('course-dropdown').value;
+        var module = document.getElementById('module-dropdown').value;
+        var assignment = document.getElementById('assignment-dropdown').value;
+        
+        if (course && module && assignment) {
+            // Create a new button element
+            var btn = document.createElement("button");
 
-        // Set the button's text
-        btn.innerHTML = "Proceed";
+            // Set the button's text
+            btn.innerHTML = "Proceed";
 
-        // Set the button's onclick event to navigate to the next page
-        btn.onclick = function () {
-            window.location.href = assignmentRedirectUrl; // use the redirect URL passed to the function
+            // Set the button's onclick event to navigate to the next page
+            btn.onclick = function () {
+                console.log(course, module, assignment);
+                window.location.href = assignmentRedirectUrl + '?course=' + encodeURIComponent(course) + '&module=' + encodeURIComponent(module) + '&assignment=' + encodeURIComponent(assignment); // use the redirect URL passed to the function
         };
 
         // Append the button to the body (or wherever you want to add it)
         document.body.appendChild(btn);
+    }
     });
 
     // Display the 'Course' dropdown at the end of the function
@@ -106,11 +113,11 @@ function handleDropdowns(assignmentRedirectUrl) {
 }
 
 document.getElementById('submit-assignment-btn').addEventListener('click', function() {
-    handleDropdowns("submit_assignment.html");
+    handleDropdowns("display_assignment.html");
 });
 
 document.getElementById('edit-assignment-btn').addEventListener('click', function() {
-    handleDropdowns("edit_assignment.html");
+    handleDropdowns("display_assignment.html");
 });
 
 document.getElementById('review-feedback-btn').addEventListener('click', function() {

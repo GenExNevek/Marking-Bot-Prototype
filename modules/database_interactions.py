@@ -41,13 +41,14 @@ def display_assignment():
         cursor.execute('SELECT ModuleTitle FROM Modules WHERE ModuleNo = %s', (module,))
         module_title = cursor.fetchone()[0]
         
-        cursor.execute('SELECT AssignmentTitle FROM Assignments WHERE AssignmentID = %s', (assignment,))
-        assignment_title = cursor.fetchone()[0]
+        cursor.execute('SELECT AssignmentTitle, AssignmentDescription FROM Assignments WHERE AssignmentID = %s', (assignment,))
+        assignment_title, assignment_description = cursor.fetchone()
         
         return jsonify({
             'CourseTitle': course_title,
             'ModuleTitle': module_title,
-            'AssignmentTitle': assignment_title
+            'AssignmentTitle': assignment_title,
+            'AssignmentDescription': assignment_description  # New line
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500

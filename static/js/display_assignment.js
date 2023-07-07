@@ -11,5 +11,6 @@ window.onload = function() {
             document.getElementById('course-title').textContent = data.CourseTitle;
             document.getElementById('module-title').textContent = data.ModuleTitle;
             document.getElementById('assignment-title').textContent = data.AssignmentTitle;
+            document.getElementById('assignment-description').textContent = data.AssignmentDescription;
         });
 };

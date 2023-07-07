@@ -33,7 +33,7 @@ def display_assignment():
     assignment = request.args.get('assignment')
     
     cursor = mysql.connection.cursor()
-    
+
     try:
         cursor.execute('SELECT CourseTitle FROM Courses WHERE CourseID = %s', (course,))
         course_title = cursor.fetchone()[0]
@@ -43,12 +43,60 @@ def display_assignment():
         
         cursor.execute('SELECT AssignmentTitle, AssignmentDescription FROM Assignments WHERE AssignmentID = %s', (assignment,))
         assignment_title, assignment_description = cursor.fetchone()
-        
+
+        cursor.execute('''
+            SELECT 
+                Tasks.TaskNo,
+                Tasks.TaskDescription, 
+                LearningObjectives.LearningObjectiveDescription, 
+                Questions.QuestionCriteria, 
+                Questions.QuestionDescription, 
+                SuggestedEvidence.SuggestedEvidenceDescription 
+            FROM 
+                Tasks 
+            INNER JOIN 
+                LearningObjectives ON Tasks.TaskNo = LearningObjectives.TaskNo 
+            INNER JOIN 
+                Questions ON LearningObjectives.LearningObjectiveNo = Questions.LearningObjectiveNo 
+            LEFT JOIN 
+                SuggestedEvidence ON Questions.QuestionNo = SuggestedEvidence.QuestionNo 
+            WHERE 
+                Tasks.AssignmentID = %s
+        ''', (assignment,))
+        task_rows = cursor.fetchall()
+
+        task_details = []
+        for row in task_rows:
+            task_no = row[0]
+            task_description = row[1]
+            learning_objective_description = row[2]
+            question_criteria = row[3]
+            question_description = row[4]
+            suggested_evidence_description = row[5]
+
+            task = next((item for item in task_details if item["TaskNo"] == task_no), None)
+            if task is None:
+                task = {
+                    'TaskNo': task_no,
+                    'TaskDescription': task_description,
+                    'Questions': []
+                }
+                task_details.append(task)
+
+            question = {
+                'LearningObjectiveDescription': learning_objective_description,
+                'QuestionCriteria': question_criteria,
+                'QuestionDescription': question_description,
+                'SuggestedEvidenceDescription': suggested_evidence_description
+            }
+            task['Questions'].append(question)
+
         return jsonify({
             'CourseTitle': course_title,
             'ModuleTitle': module_title,
             'AssignmentTitle': assignment_title,
-            'AssignmentDescription': assignment_description  # New line
+            'AssignmentDescription': assignment_description,
+            'TaskDetails': task_details
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500

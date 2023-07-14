@@ -43,13 +43,29 @@ def display_assignment():
         
         cursor.execute('SELECT AssignmentName, AssignmentText FROM Assignments WHERE AssignID = %s', (assignment,))
         assignment_name, assignment_text = cursor.fetchone()
+
+        cursor.execute('SELECT TaskID, TaskText FROM Tasks WHERE AssignID = %s', (assignment,))
+        tasks = [list(task) for task in cursor.fetchall()]
+
+        for task in tasks:
+            cursor.execute('SELECT ObjectiveID, ObjectiveText FROM LearningObjectives WHERE TaskID = %s', (task[0],))
+            task.append([list(objective) for objective in cursor.fetchall()])
+
+            for objective in task[2]:
+                cursor.execute('SELECT QuestionID, QuestionText FROM Questions WHERE ObjectiveID = %s', (objective[0],))
+                objective.append([list(question) for question in cursor.fetchall()])
+
+                for question in objective[2]:
+                    cursor.execute('SELECT EvidenceText FROM SuggestedEvidence WHERE QuestionID = %s', (question[0],))
+                    question.append(cursor.fetchone()[0])
         
         return jsonify({
-            'CourseName': course_name,
-            'ModuleName': module_name,
-            'AssignmentName': assignment_name,
-            'AssignmentText': assignment_text 
-        })
+        'CourseName': course_name,
+        'ModuleName': module_name,
+        'AssignmentName': assignment_name,
+        'AssignmentText': assignment_text,
+        'Tasks': tasks
+    })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     finally:

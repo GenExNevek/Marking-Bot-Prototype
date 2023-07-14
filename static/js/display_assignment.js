@@ -12,5 +12,28 @@ window.onload = function() {
             document.getElementById('module-name').textContent = data.ModuleName;
             document.getElementById('assignment-name').textContent = data.AssignmentName;
             document.getElementById('assignment-text').textContent = data.AssignmentText;
+
+            var tasksDiv = document.getElementById('tasks');
+            data.Tasks.forEach(task => {
+                var taskDiv = document.createElement('div');
+                taskDiv.textContent = 'Task: ' + task[1];
+                tasksDiv.appendChild(taskDiv);
+
+                task[2].forEach(objective => {
+                    var objectiveDiv = document.createElement('div');
+                    objectiveDiv.textContent = 'Learning Objective: ' + objective[1];
+                    taskDiv.appendChild(objectiveDiv);
+
+                    objective[2].forEach(question => {
+                        var questionDiv = document.createElement('div');
+                        questionDiv.textContent = 'Question: ' + question[1];
+                        objectiveDiv.appendChild(questionDiv);
+
+                        var evidenceDiv = document.createElement('div');
+                        evidenceDiv.textContent = 'Suggested Evidence: ' + question[2];
+                        objectiveDiv.appendChild(evidenceDiv);
+                    });
+                });
+            });
         });
 };

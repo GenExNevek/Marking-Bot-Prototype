@@ -26,34 +26,34 @@ app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
 # GET ASSIGNMENT DETAILS
 #--------------------------------------------------
 
-@app.route('/get_assignment_details/<assign_id>', methods=['GET'])
-def get_assignment_details(assign_id):
+@app.route('/display_assignment', methods=['GET'])
+def display_assignment():
+    course = request.args.get('course')
+    module = request.args.get('module')
+    assignment = request.args.get('assignment')
+    
     cursor = mysql.connection.cursor()
+    
     try:
-        cursor.execute('''
-        SELECT 
-            Courses.CourseName,
-            Modules.ModuleName,
-            Assignments.AssignmentName,
-            Assignments.AssignmentText,
-            Tasks.TaskText,
-            LearningObjectives.ObjectiveText,
-            Questions.QuestionCriteria,
-            Questions.QuestionText,
-            SuggestedEvidence.EvidenceText
-        FROM Assignments
-        INNER JOIN Modules ON Assignments.ModuleID = Modules.ModuleID
-        INNER JOIN Courses ON Modules.CourseID = Courses.CourseID
-        INNER JOIN Tasks ON Assignments.AssignID = Tasks.AssignID
-        INNER JOIN LearningObjectives ON Tasks.TaskID = LearningObjectives.TaskID
-        INNER JOIN Questions ON LearningObjectives.ObjectiveID = Questions.ObjectiveID
-        INNER JOIN SuggestedEvidence ON Questions.QuestionID = SuggestedEvidence.QuestionID
-        WHERE Assignments.AssignID = %s
-        ''', (assign_id,))
-        assignment_details = cursor.fetchall()
+        cursor.execute('SELECT CourseName FROM Courses WHERE CourseID = %s', (course,))
+        course_name = cursor.fetchone()[0]
+        
+        cursor.execute('SELECT ModuleName FROM Modules WHERE ModuleID = %s', (module,))
+        module_name = cursor.fetchone()[0]
+        
+        cursor.execute('SELECT AssignmentName, AssignmentText FROM Assignments WHERE AssignID = %s', (assignment,))
+        assignment_name, assignment_text = cursor.fetchone()
+        
+        return jsonify({
+            'CourseName': course_name,
+            'ModuleName': module_name,
+            'AssignmentName': assignment_name,
+            'AssignmentText': assignment_text 
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     finally:
         cursor.close()
-    return jsonify(assignment_details)
 
 
 #--------------------------------------------------

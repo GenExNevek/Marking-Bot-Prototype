@@ -1,29 +1,28 @@
 window.onload = function() {
-    var urlParams = new URLSearchParams(window.location.search);
-    
-    var course = urlParams.get('course');
-    var module = urlParams.get('module');
-    var assignment = urlParams.get('assignment');
-    
-    fetch('http://localhost:5000/display_assignment?course=' + course + '&module=' + module + '&assignment=' + assignment)
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('course-title').textContent = data.CourseTitle;
-            document.getElementById('module-title').textContent = data.ModuleTitle;
-            document.getElementById('assignment-title').textContent = data.AssignmentTitle;
-            document.getElementById('assignment-description').textContent = data.AssignmentDescription;
+    const urlParams = new URLSearchParams(window.location.search);
+    const assign_id = urlParams.get('assignment');
 
-            var taskDetailsDiv = document.getElementById('task-details');
-            data.TaskDetails.forEach(function(task) {
-                var taskDiv = document.createElement('div');
-                taskDiv.innerHTML = '<h3>Task Description: ' + task.TaskDescription + '</h3>';
-                task.Questions.forEach(function(question) {
-                    taskDiv.innerHTML += '<p>Learning Objective: ' + question.LearningObjectiveDescription + '</p>' +
-                                         '<p>Question Criteria: ' + question.QuestionCriteria + '</p>' +
-                                         '<p>Question Description: ' + question.QuestionDescription + '</p>' +
-                                         '<p>Suggested Evidence: ' + question.SuggestedEvidenceDescription + '</p>';
-                });
-                taskDetailsDiv.appendChild(taskDiv);
-            });
-        });
+    fetch('http://localhost:5000/get_assignment_details/' + assign_id)
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('course-name').innerText = data[0].CourseName;
+        document.getElementById('module-name').innerText = data[0].ModuleName;
+        document.getElementById('assignment-name').innerText = data[0].AssignmentName;
+        document.getElementById('assignment-text').innerText = data[0].AssignmentText;
+        
+        let tasksContainer = document.getElementById('tasks-container');
+        for(let i=0; i < data.length; i++) {
+            let taskElement = document.createElement('div');
+            taskElement.innerHTML = `
+            <h4>Task: ${data[i].TaskText}</h4>
+            <h5>Learning Objective: ${data[i].ObjectiveText}</h5>
+            <h6>Question Criteria: ${data[i].QuestionCriteria}</h6>
+            <p>Question: ${data[i].QuestionText}</p>
+            <p>Suggested Evidence: ${data[i].EvidenceText}</p>
+            <textarea placeholder="Enter your response here"></textarea>
+            `;
+            tasksContainer.appendChild(taskElement);
+        }
+    })
+    .catch(error => console.error('Error:', error));
 };

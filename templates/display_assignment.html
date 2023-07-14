@@ -2,18 +2,16 @@
 <html>
 <head>
     <title>Display Assignment</title>
+    <script src="../static/js/display_assignment.js"></script>
 </head>
 <body>
-    <h1 id="course-title"></h1>
-    <h2 id="module-title"></h2>
-    <h3 id="assignment-title"></h3>
+    <h1 id="courseName"></h1>
+    <h2 id="moduleName"></h2>
+    <h2 id="assignmentName"></h2>
+    <p id="assignmentText"></p>
 
-    <hr> <!--divider-->
-    <h2>Assignment Description:</h2>
-    <p id="assignment-description"></p>
-    <hr>
-    <div id="task-details"></div>
+    <div id="taskContainer"></div>
 
-    <script src="../static/js/display_assignment.js"></script>
+    <button onclick="submitResponses()">Submit</button>
 </body>
 </html>

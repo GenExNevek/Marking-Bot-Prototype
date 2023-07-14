@@ -23,85 +23,38 @@ app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
 app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
 
 #--------------------------------------------------
-# DISPLAY ASSIGNMENT
+# GET ASSIGNMENT DETAILS
 #--------------------------------------------------
 
-@app.route('/display_assignment', methods=['GET'])
-def display_assignment():
-    course = request.args.get('course')
-    module = request.args.get('module')
-    assignment = request.args.get('assignment')
-    
+@app.route('/get_assignment_details/<assign_id>', methods=['GET'])
+def get_assignment_details(assign_id):
     cursor = mysql.connection.cursor()
-
     try:
-        cursor.execute('SELECT CourseTitle FROM Courses WHERE CourseID = %s', (course,))
-        course_title = cursor.fetchone()[0]
-        
-        cursor.execute('SELECT ModuleTitle FROM Modules WHERE ModuleNo = %s', (module,))
-        module_title = cursor.fetchone()[0]
-        
-        cursor.execute('SELECT AssignmentTitle, AssignmentDescription FROM Assignments WHERE AssignmentID = %s', (assignment,))
-        assignment_title, assignment_description = cursor.fetchone()
-
         cursor.execute('''
-            SELECT 
-                Tasks.TaskNo,
-                Tasks.TaskDescription, 
-                LearningObjectives.LearningObjectiveDescription, 
-                Questions.QuestionCriteria, 
-                Questions.QuestionDescription, 
-                SuggestedEvidence.SuggestedEvidenceDescription 
-            FROM 
-                Tasks 
-            INNER JOIN 
-                LearningObjectives ON Tasks.TaskNo = LearningObjectives.TaskNo 
-            INNER JOIN 
-                Questions ON LearningObjectives.LearningObjectiveNo = Questions.LearningObjectiveNo 
-            LEFT JOIN 
-                SuggestedEvidence ON Questions.QuestionNo = SuggestedEvidence.QuestionNo 
-            WHERE 
-                Tasks.AssignmentID = %s
-        ''', (assignment,))
-        task_rows = cursor.fetchall()
-
-        task_details = []
-        for row in task_rows:
-            task_no = row[0]
-            task_description = row[1]
-            learning_objective_description = row[2]
-            question_criteria = row[3]
-            question_description = row[4]
-            suggested_evidence_description = row[5]
-
-            task = next((item for item in task_details if item["TaskNo"] == task_no), None)
-            if task is None:
-                task = {
-                    'TaskNo': task_no,
-                    'TaskDescription': task_description,
-                    'Questions': []
-                }
-                task_details.append(task)
-
-            question = {
-                'LearningObjectiveDescription': learning_objective_description,
-                'QuestionCriteria': question_criteria,
-                'QuestionDescription': question_description,
-                'SuggestedEvidenceDescription': suggested_evidence_description
-            }
-            task['Questions'].append(question)
-
-        return jsonify({
-            'CourseTitle': course_title,
-            'ModuleTitle': module_title,
-            'AssignmentTitle': assignment_title,
-            'AssignmentDescription': assignment_description,
-            'TaskDetails': task_details
-        })
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        SELECT 
+            Courses.CourseName,
+            Modules.ModuleName,
+            Assignments.AssignmentName,
+            Assignments.AssignmentText,
+            Tasks.TaskText,
+            LearningObjectives.ObjectiveText,
+            Questions.QuestionCriteria,
+            Questions.QuestionText,
+            SuggestedEvidence.EvidenceText
+        FROM Assignments
+        INNER JOIN Modules ON Assignments.ModuleID = Modules.ModuleID
+        INNER JOIN Courses ON Modules.CourseID = Courses.CourseID
+        INNER JOIN Tasks ON Assignments.AssignID = Tasks.AssignID
+        INNER JOIN LearningObjectives ON Tasks.TaskID = LearningObjectives.TaskID
+        INNER JOIN Questions ON LearningObjectives.ObjectiveID = Questions.ObjectiveID
+        INNER JOIN SuggestedEvidence ON Questions.QuestionID = SuggestedEvidence.QuestionID
+        WHERE Assignments.AssignID = %s
+        ''', (assign_id,))
+        assignment_details = cursor.fetchall()
     finally:
         cursor.close()
+    return jsonify(assignment_details)
+
 
 #--------------------------------------------------
 # GET COURSES
@@ -111,9 +64,9 @@ def display_assignment():
 def get_courses():
     cursor = mysql.connection.cursor()
     try:
-        cursor.execute('SELECT CourseID, CourseTitle FROM Courses')
+        cursor.execute('SELECT CourseID, CourseName FROM Courses')
         courses = cursor.fetchall()
-        courses = [{'CourseID': course[0], 'CourseTitle': course[1]} for course in courses]
+        courses = [{'CourseID': course[0], 'CourseName': course[1]} for course in courses]
     finally:
         cursor.close()
     return jsonify(courses)
@@ -126,9 +79,9 @@ def get_courses():
 def get_modules(course_id):
     cursor = mysql.connection.cursor()
     try:
-        cursor.execute('SELECT ModuleNo, ModuleTitle FROM Modules WHERE CourseID = %s', (course_id,))
+        cursor.execute('SELECT ModuleID, ModuleName FROM Modules WHERE CourseID = %s', (course_id,))
         modules = cursor.fetchall()
-        modules = [{'ModuleNo': module[0], 'ModuleTitle': module[1]} for module in modules]
+        modules = [{'ModuleID': module[0], 'ModuleName': module[1]} for module in modules]
     finally:
         cursor.close()
     return jsonify(modules)
@@ -137,13 +90,13 @@ def get_modules(course_id):
 # GET ASSIGNMENTS
 #--------------------------------------------------
 
-@app.route('/get_assignments/<module_no>', methods=['GET'])
-def get_assignments(module_no):
+@app.route('/get_assignments/<module_id>', methods=['GET'])
+def get_assignments(module_id):
     cursor = mysql.connection.cursor()
     try:
-        cursor.execute('SELECT AssignmentID, AssignmentTitle FROM Assignments WHERE ModuleNo = %s', (module_no,))
+        cursor.execute('SELECT AssignID, AssignmentName FROM Assignments WHERE ModuleID = %s', (module_id,))
         assignments = cursor.fetchall()
-        assignments = [{'AssignmentID': assignment[0], 'AssignmentTitle': assignment[1]} for assignment in assignments]
+        assignments = [{'AssignID': assignment[0], 'AssignmentName': assignment[1]} for assignment in assignments]
     finally:
         cursor.close()
     return jsonify(assignments)
@@ -171,7 +124,7 @@ def flask_create_user():
 def assign_user(username):
     cursor = mysql.connection.cursor()
     try:
-        cursor.execute("SELECT UserID FROM Users WHERE Name = %s", (username,))
+        cursor.execute("SELECT UserID FROM Users WHERE Username = %s", (username,))
         result = cursor.fetchone()
         if result is None:
             return {'status': 'error', 'message': 'User does not exist'}
@@ -184,7 +137,7 @@ def assign_user(username):
 def create_user(username):
     cursor = mysql.connection.cursor()
     try:
-        cursor.execute("INSERT INTO Users (Name) VALUES (%s)", (username,))
+        cursor.execute("INSERT INTO Users (Username) VALUES (%s)", (username,))
         mysql.connection.commit()
         session['user_id'] = cursor.lastrowid
         return {'status': 'success'}

@@ -17,7 +17,7 @@ function handleDropdowns(assignmentRedirectUrl) {
         let option;
         for (let i = 0; i < data.length; i++) {
             option = document.createElement('option');
-            option.text = data[i].CourseTitle;
+            option.text = data[i].CourseName;
             option.value = data[i].CourseID;
             dropdown.add(option);
         }
@@ -45,8 +45,8 @@ function handleDropdowns(assignmentRedirectUrl) {
             let option;
             for (let i = 0; i < data.length; i++) {
                 option = document.createElement('option');
-                option.text = data[i].ModuleTitle;
-                option.value = data[i].ModuleNo;
+                option.text = data[i].ModuleName;
+                option.value = data[i].ModuleID;
                 dropdown.add(option);
             }
         });
@@ -74,8 +74,8 @@ function handleDropdowns(assignmentRedirectUrl) {
             let option;
             for (let i = 0; i < data.length; i++) {
                 option = document.createElement('option');
-                option.text = data[i].AssignmentTitle;
-                option.value = data[i].AssignmentID;
+                option.text = data[i].AssignmentName;
+                option.value = data[i].AssignID;
                 dropdown.add(option);
             }
         });

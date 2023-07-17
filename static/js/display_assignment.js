@@ -48,6 +48,7 @@ window.onload = function() {
 function saveResponses() {
     var urlParams = new URLSearchParams(window.location.search);
     var assignment = urlParams.get('assignment');
+    var username = urlParams.get('username'); // get the username from the URL
 
     var responses = [];
     var responseInputs = document.querySelectorAll('textarea[id^="response-"]');
@@ -57,7 +58,7 @@ function saveResponses() {
         responses.push({questionId: questionId, responseText: responseText});
     });
 
-    fetch('http://localhost:5000/save_responses?assignment=' + assignment, {
+    fetch('http://localhost:5000/save_responses?assignment=' + assignment + '&username=' + username, { // include the username in the request URL
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

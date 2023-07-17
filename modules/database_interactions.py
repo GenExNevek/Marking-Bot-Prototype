@@ -77,25 +77,32 @@ def display_assignment():
 
 @app.route('/save_responses', methods=['POST'])
 def save_responses():
-    assignment = request.args.get('assignment')
+    #assignment = request.args.get('assignment') -- I have recently removed this line as the argument was not used. 
     responses = request.json
+    username = request.args.get('username')
+    
 
     cursor = mysql.connection.cursor()
 
     try:
         # Get the user_id based on the username
-        cursor.execute("SELECT UserID FROM Users WHERE Username = %s", (session['username'],))
+        cursor.execute("SELECT UserID FROM Users WHERE Username = %s", (username,))
         result = cursor.fetchone()
         if result is None:
             return jsonify({'status': 'error', 'message': 'User does not exist'})
 
         user_id = result[0]
-        session['user_id'] = user_id
 
         for response in responses:
             question_id = response['questionId']
             response_text = response['responseText']
-            cursor.execute('INSERT INTO UserSubmission (UserID, QuestionID, Response) VALUES (%s, %s, %s)', (user_id, question_id, response_text))
+            # Use INSERT ... ON DUPLICATE KEY UPDATE to overwrite existing rows
+            cursor.execute(
+                'INSERT INTO UserSubmission (UserID, QuestionID, Response) '
+                'VALUES (%s, %s, %s) '
+                'ON DUPLICATE KEY UPDATE Response = %s', 
+                (user_id, question_id, response_text, response_text)
+            )
         mysql.connection.commit()
 
         return jsonify({'status': 'success'})

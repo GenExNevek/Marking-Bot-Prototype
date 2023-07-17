@@ -1,15 +1,16 @@
-window.onload = function() {
+window.onload = async function() {
     var urlParams = new URLSearchParams(window.location.search);
-    
+
+    var edit = urlParams.get('edit');
     var course = urlParams.get('course');
     var module = urlParams.get('module');
     var assignment = urlParams.get('assignment');
     var username = urlParams.get('username');
     console.log(course, module, assignment, username);
     
-    fetch('http://localhost:5000/display_assignment?course=' + course + '&module=' + module + '&assignment=' + assignment + '&username=' + username)
+    await fetch('http://localhost:5000/display_assignment?course=' + course + '&module=' + module + '&assignment=' + assignment + '&username=' + username)
         .then(response => response.json())
-        .then(data => {
+        .then(async data => {
             document.getElementById('course-name').textContent = data.CourseName;
             document.getElementById('module-name').textContent = data.ModuleName;
             document.getElementById('assignment-name').textContent = data.AssignmentName;
@@ -43,7 +44,34 @@ window.onload = function() {
                 });
             });
         });
+        var urlParams = new URLSearchParams(window.location.search);
+        var edit = urlParams.get('edit');
+        if (edit === 'true') {
+            await loadResponses();  // add await keyword here
+    }
 };
+
+function loadResponses() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var assignment = urlParams.get('assignment');
+    var username = urlParams.get('username');
+
+    fetch('http://localhost:5000/get_responses?assignment=' + assignment + '&username=' + username)
+    .then(response => response.json())
+    .then(data => {
+        // For each response, find the corresponding text area and set its value
+        console.log(data);
+        data.forEach(response => {
+            var textarea = document.getElementById('response-' + response.questionId);
+            if (textarea) {
+                textarea.value = response.responseText;
+            }
+        });
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
 
 function saveResponses() {
     var urlParams = new URLSearchParams(window.location.search);
@@ -73,3 +101,5 @@ function saveResponses() {
         console.error('Error:', error);
     });
 }
+
+

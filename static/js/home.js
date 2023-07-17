@@ -101,7 +101,7 @@ function handleDropdowns(assignmentRedirectUrl) {
             // Set the button's onclick event to navigate to the next page
             btn.onclick = function () {
                 console.log(course, module, assignment, username);
-                window.location.href = assignmentRedirectUrl + '?course=' + encodeURIComponent(course) + '&module=' + encodeURIComponent(module) + '&assignment=' + encodeURIComponent(assignment) + '&username=' + encodeURIComponent(username); 
+                window.location.href = assignmentRedirectUrl + '?course=' + encodeURIComponent(course) + '&module=' + encodeURIComponent(module) + '&assignment=' + encodeURIComponent(assignment) + '&username=' + encodeURIComponent(username) + '&edit=' + encodeURIComponent(assignmentRedirectUrl === 'display_assignment.html');
             };
         // Append the button to the body (or wherever you want to add it)
         document.body.appendChild(btn);
@@ -118,6 +118,13 @@ document.getElementById('submit-assignment-btn').addEventListener('click', funct
 
 document.getElementById('edit-assignment-btn').addEventListener('click', function() {
     handleDropdowns("display_assignment.html");
+    var course = document.getElementById('course-dropdown').value;
+    var module = document.getElementById('module-dropdown').value;
+    var assignment = document.getElementById('assignment-dropdown').value;
+
+    if (course && module && assignment) {
+        window.location.href = 'display_assignment.html?course=' + course + '&module=' + module + '&assignment=' + assignment + '&username=' + username + '&edit=true'; // Edit here
+    }
 });
 
 document.getElementById('review-feedback-btn').addEventListener('click', function() {

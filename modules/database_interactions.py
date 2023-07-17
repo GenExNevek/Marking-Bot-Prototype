@@ -72,6 +72,45 @@ def display_assignment():
         cursor.close()
 
 #--------------------------------------------------
+# GET RESPONSE
+#--------------------------------------------------
+
+@app.route('/get_responses', methods=['GET'])
+def get_responses():
+    username = request.args.get('username')
+    assignment = request.args.get('assignment')
+
+    cursor = mysql.connection.cursor()
+
+    # Fetch user's id
+    user_query = "SELECT UserID FROM Users WHERE Username = %s"
+    cursor.execute(user_query, [username])
+    user_id = cursor.fetchone()[0]
+
+    # Fetch questions for the assignment
+    question_query = """
+    SELECT Questions.QuestionID FROM Questions 
+    INNER JOIN LearningObjectives ON Questions.ObjectiveID = LearningObjectives.ObjectiveID 
+    INNER JOIN Tasks ON LearningObjectives.TaskID = Tasks.TaskID 
+    INNER JOIN Assignments ON Tasks.AssignID = Assignments.AssignID
+    WHERE Assignments.AssignID = %s
+    """
+    cursor.execute(question_query, [assignment])
+    question_ids = [row[0] for row in cursor.fetchall()]  # Change this line
+
+    # Fetch the user's responses for the assignment
+    response_query = """
+    SELECT QuestionID, Response FROM UserSubmission 
+    WHERE UserID = %s AND QuestionID IN %s
+    """
+    cursor.execute(response_query, (user_id, tuple(question_ids)))
+    responses = [{"questionId": row[0], "responseText": row[1]} for row in cursor.fetchall()]  # Edit here
+
+    cursor.close()
+    
+    return jsonify(responses)
+
+#--------------------------------------------------
 # SAVE RESPONSE
 #--------------------------------------------------
 

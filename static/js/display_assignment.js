@@ -4,8 +4,10 @@ window.onload = function() {
     var course = urlParams.get('course');
     var module = urlParams.get('module');
     var assignment = urlParams.get('assignment');
+    var username = urlParams.get('username');
+    console.log(course, module, assignment, username);
     
-    fetch('http://localhost:5000/display_assignment?course=' + course + '&module=' + module + '&assignment=' + assignment)
+    fetch('http://localhost:5000/display_assignment?course=' + course + '&module=' + module + '&assignment=' + assignment + '&username=' + username)
         .then(response => response.json())
         .then(data => {
             document.getElementById('course-name').textContent = data.CourseName;
@@ -32,8 +34,41 @@ window.onload = function() {
                         var evidenceDiv = document.createElement('div');
                         evidenceDiv.textContent = 'Suggested Evidence: ' + question[2];
                         objectiveDiv.appendChild(evidenceDiv);
+
+                        var responseInput = document.createElement('textarea');
+                        responseInput.setAttribute('id', 'response-' + question[0]);
+                        responseInput.setAttribute('placeholder', 'Your response here...');
+                        objectiveDiv.appendChild(responseInput);
                     });
                 });
             });
         });
 };
+
+function saveResponses() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var assignment = urlParams.get('assignment');
+
+    var responses = [];
+    var responseInputs = document.querySelectorAll('textarea[id^="response-"]');
+    responseInputs.forEach(input => {
+        var questionId = input.id.replace('response-', '');
+        var responseText = input.value;
+        responses.push({questionId: questionId, responseText: responseText});
+    });
+
+    fetch('http://localhost:5000/save_responses?assignment=' + assignment, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(responses),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Success:', data);
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}

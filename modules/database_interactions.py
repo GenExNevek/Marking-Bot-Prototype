@@ -71,6 +71,38 @@ def display_assignment():
     finally:
         cursor.close()
 
+#--------------------------------------------------
+# SAVE RESPONSE
+#--------------------------------------------------
+
+@app.route('/save_responses', methods=['POST'])
+def save_responses():
+    assignment = request.args.get('assignment')
+    responses = request.json
+
+    cursor = mysql.connection.cursor()
+
+    try:
+        # Get the user_id based on the username
+        cursor.execute("SELECT UserID FROM Users WHERE Username = %s", (session['username'],))
+        result = cursor.fetchone()
+        if result is None:
+            return jsonify({'status': 'error', 'message': 'User does not exist'})
+
+        user_id = result[0]
+        session['user_id'] = user_id
+
+        for response in responses:
+            question_id = response['questionId']
+            response_text = response['responseText']
+            cursor.execute('INSERT INTO UserSubmission (UserID, QuestionID, Response) VALUES (%s, %s, %s)', (user_id, question_id, response_text))
+        mysql.connection.commit()
+
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': 'An error occurred: {}'.format(str(e))})
+    finally:
+        cursor.close()
 
 #--------------------------------------------------
 # GET COURSES
@@ -126,6 +158,19 @@ def flask_assign_user():
     username = request.json['username']
     result = assign_user(username)
     return jsonify(result)
+
+def assign_user(username):
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute("SELECT UserID FROM Users WHERE Username = %s", (username,))
+        result = cursor.fetchone()
+        if result is None:
+            return {'status': 'error', 'message': 'User does not exist'}
+        else:
+            session['user_id'] = result[0]
+            return {'status': 'success', 'user_id': result[0]}
+    finally:
+        cursor.close()
 
 #--------------------------------------------------
 # CREATE USER

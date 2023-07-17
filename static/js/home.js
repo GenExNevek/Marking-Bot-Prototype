@@ -89,6 +89,7 @@ function handleDropdowns(assignmentRedirectUrl) {
         var course = document.getElementById('course-dropdown').value;
         var module = document.getElementById('module-dropdown').value;
         var assignment = document.getElementById('assignment-dropdown').value;
+        var username = document.getElementById('username-input').value;
         
         if (course && module && assignment) {
             // Create a new button element
@@ -99,10 +100,9 @@ function handleDropdowns(assignmentRedirectUrl) {
 
             // Set the button's onclick event to navigate to the next page
             btn.onclick = function () {
-                console.log(course, module, assignment);
-                window.location.href = assignmentRedirectUrl + '?course=' + encodeURIComponent(course) + '&module=' + encodeURIComponent(module) + '&assignment=' + encodeURIComponent(assignment); // use the redirect URL passed to the function
-        };
-
+                console.log(course, module, assignment, username);
+                window.location.href = assignmentRedirectUrl + '?course=' + encodeURIComponent(course) + '&module=' + encodeURIComponent(module) + '&assignment=' + encodeURIComponent(assignment) + '&username=' + encodeURIComponent(username); 
+            };
         // Append the button to the body (or wherever you want to add it)
         document.body.appendChild(btn);
     }
